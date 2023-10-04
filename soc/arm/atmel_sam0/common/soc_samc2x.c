@@ -38,19 +38,22 @@ static void mclk_init(void)
 
 static void gclks_init(void)
 {
-	GCLK->GENCTRL[0].reg = GCLK_GENCTRL_SRC(GCLK_GENCTRL_SRC_OSC48M)
-			     | GCLK_GENCTRL_DIV(1)
-			     | GCLK_GENCTRL_GENEN;
+	GCLK->GENCTRL[0].reg = GCLK_GENCTRL_SRC(GCLK_GENCTRL_SRC_OSC48M) | GCLK_GENCTRL_DIV(1) |
+			       GCLK_GENCTRL_GENEN;
 }
 
 static int atmel_samc_init(void)
 {
 	uint32_t key;
 
-
 	key = irq_lock();
 
 	flash_waitstates_init();
+
+	// 1. Setup input pins
+	// 2. Setup clock
+	// 3. Disable internal clock
+
 	osc48m_init();
 	mclk_init();
 	gclks_init();
