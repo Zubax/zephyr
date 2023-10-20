@@ -407,8 +407,17 @@ static int start_read(const struct device *dev,
 	const struct device* adc_dev = DEVICE_DT_GET(DT_NODELABEL(adc1));
 
 	if (dev == adc_dev) {
-		// ADC1 is setup using DMA instead of buffer
-		;
+		// ADC1 is setup using DMA instead of buffer (unless we are calibrating)
+		error = check_buffer_size(sequence, 1);
+		if (error == 0) {
+			// we are calibrating
+			data->buffer = sequence->buffer;
+			data->repeat_buffer = sequence->buffer;
+		}
+		else {
+			// using DMA
+			;
+		}
 	}
 	else {
 		error = check_buffer_size(sequence, 1);
