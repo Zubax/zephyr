@@ -416,7 +416,6 @@ static int start_read(const struct device *dev,
 		}
 		// 2. If sequence contains a buffer of size > 1, it's a DMA read
 		else {
-			// using DMA
 			;
 		}
 	}
