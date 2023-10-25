@@ -57,8 +57,8 @@ static bool osc_init(void)
 {
     // Before starting with setting up the XOSC, we check the reason of the last reset
     // Cannot use the bit field, it's from HAL and it overlaps with a defined WDT base address define
-    const bool was_watchdog_reset = RSTC->RCAUSE.reg & (1<<6);
-    if(was_watchdog_reset) {
+    const bool was_reset_caused_by_watchdog = RSTC->RCAUSE.reg & (1 << 6);
+    if(was_reset_caused_by_watchdog) {
         return false;
     }
 	////////////////
@@ -145,10 +145,10 @@ static void gclks_init(bool useDPLL96M)
 	// (already done in osc_init()).
     if(useDPLL96M)
     {
-	    GCLK->GENCTRL[0].bit.SRC = GCLK_GENCTRL_SRC_DPLL96M_Val;
+        GCLK->GENCTRL[0].bit.SRC = GCLK_GENCTRL_SRC_DPLL96M_Val;
     } else {
-        GCLK->GENCTRL[0].bit.SRC = GCLK_GENCTRL_SRC_OSC48M_Val;
-    }
+    	GCLK->GENCTRL[0].bit.SRC = GCLK_GENCTRL_SRC_OSC48M_Val;
+	}
 
 	// 1. The Generator must be enabled (GENCTRL.GENEN = 1) and the division factor must
 	// be set (GENCTRLn.DIVSEL and GENCTRLn.DIV) by performing a single 32-bit write to the
@@ -157,8 +157,8 @@ static void gclks_init(bool useDPLL96M)
 	GCLK->GENCTRL[0].bit.DIV = 1;
 	GCLK->GENCTRL[0].bit.GENEN = 1;
 
-    while (GCLK->SYNCBUSY.bit.GENCTRL0){
-    }
+	while (GCLK->SYNCBUSY.bit.GENCTRL0){
+	}
 
 	// 2. The Generic Clock for a peripheral must be configured by writing to the respective
 	// PCHCTRLm register. The Generator used as the source for the Peripheral Clock
@@ -173,14 +173,14 @@ static int atmel_samc_init(void)
 
 	flash_waitstates_init();
 
-    enable_watchdog();
+	enable_watchdog();
 
 	osc48m_init();
 	mclk_init();
-    bool dpll_now_used = osc_init();
+	bool dpll_now_used = osc_init();
 	gclks_init(dpll_now_used);
 
-    disable_watchdog();
+	disable_watchdog();
 	/* Install default handler that simply resets the CPU
 	 * if configured in the kernel, NOP otherwise
 	 */

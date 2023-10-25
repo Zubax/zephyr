@@ -1071,7 +1071,7 @@ static int can_mcan_add_rx_filter_ext(const struct device *dev, can_rx_callback_
 	}
 
 	if ((filter->flags & (CAN_FILTER_DATA | CAN_FILTER_RTR)) !=
-	    (CAN_FILTER_DATA | CAN_FILTER_RTR)) {
+		(CAN_FILTER_DATA | CAN_FILTER_RTR)) {
 		data->ext_filt_rtr_mask |= (1U << filter_id);
 	} else {
 		data->ext_filt_rtr_mask &= ~(1U << filter_id);
@@ -1100,7 +1100,7 @@ int can_mcan_add_rx_filter(const struct device *dev, can_rx_callback_t callback,
 
 #ifdef CONFIG_CAN_FD_MODE
 	if ((filter->flags &
-	     ~(CAN_FILTER_IDE | CAN_FILTER_DATA | CAN_FILTER_RTR | CAN_FILTER_FDF)) != 0U) {
+		 ~(CAN_FILTER_IDE | CAN_FILTER_DATA | CAN_FILTER_RTR | CAN_FILTER_FDF)) != 0U) {
 #else  /* CONFIG_CAN_FD_MODE */
 	if ((filter->flags & ~(CAN_FILTER_IDE | CAN_FILTER_DATA | CAN_FILTER_RTR)) != 0U) {
 #endif /* !CONFIG_CAN_FD_MODE */
@@ -1217,28 +1217,28 @@ int can_mcan_configure_message_ram(const struct device *dev, uintptr_t mrba)
 	can_mcan_enable_configuration_change(dev);
 
 	reg = ((POINTER_TO_UINT(msg_ram->std_filt) - mrba) & CAN_MCAN_SIDFC_FLSSA) |
-	      FIELD_PREP(CAN_MCAN_SIDFC_LSS, ARRAY_SIZE(msg_ram->std_filt));
+		  FIELD_PREP(CAN_MCAN_SIDFC_LSS, ARRAY_SIZE(msg_ram->std_filt));
 	err = can_mcan_write_reg(dev, CAN_MCAN_SIDFC, reg);
 	if (err != 0) {
 		return err;
 	}
 
 	reg = ((POINTER_TO_UINT(msg_ram->ext_filt) - mrba) & CAN_MCAN_XIDFC_FLESA) |
-	      FIELD_PREP(CAN_MCAN_XIDFC_LSS, ARRAY_SIZE(msg_ram->ext_filt));
+		  FIELD_PREP(CAN_MCAN_XIDFC_LSS, ARRAY_SIZE(msg_ram->ext_filt));
 	err = can_mcan_write_reg(dev, CAN_MCAN_XIDFC, reg);
 	if (err != 0) {
 		return err;
 	}
 
 	reg = ((POINTER_TO_UINT(msg_ram->rx_fifo0) - mrba) & CAN_MCAN_RXF0C_F0SA) |
-	      FIELD_PREP(CAN_MCAN_RXF0C_F0S, ARRAY_SIZE(msg_ram->rx_fifo0));
+		  FIELD_PREP(CAN_MCAN_RXF0C_F0S, ARRAY_SIZE(msg_ram->rx_fifo0));
 	err = can_mcan_write_reg(dev, CAN_MCAN_RXF0C, reg);
 	if (err != 0) {
 		return err;
 	}
 
 	reg = ((POINTER_TO_UINT(msg_ram->rx_fifo1) - mrba) & CAN_MCAN_RXF1C_F1SA) |
-	      FIELD_PREP(CAN_MCAN_RXF1C_F1S, ARRAY_SIZE(msg_ram->rx_fifo1));
+		  FIELD_PREP(CAN_MCAN_RXF1C_F1S, ARRAY_SIZE(msg_ram->rx_fifo1));
 	err = can_mcan_write_reg(dev, CAN_MCAN_RXF1C, reg);
 	if (err != 0) {
 		return err;
@@ -1251,14 +1251,14 @@ int can_mcan_configure_message_ram(const struct device *dev, uintptr_t mrba)
 	}
 
 	reg = ((POINTER_TO_UINT(msg_ram->tx_event_fifo) - mrba) & CAN_MCAN_TXEFC_EFSA) |
-	      FIELD_PREP(CAN_MCAN_TXEFC_EFS, ARRAY_SIZE(msg_ram->tx_event_fifo));
+		  FIELD_PREP(CAN_MCAN_TXEFC_EFS, ARRAY_SIZE(msg_ram->tx_event_fifo));
 	err = can_mcan_write_reg(dev, CAN_MCAN_TXEFC, reg);
 	if (err != 0) {
 		return err;
 	}
 
 	reg = ((POINTER_TO_UINT(msg_ram->tx_buffer) - mrba) & CAN_MCAN_TXBC_TBSA) |
-	      FIELD_PREP(CAN_MCAN_TXBC_TFQS, ARRAY_SIZE(msg_ram->tx_buffer)) | CAN_MCAN_TXBC_TFQM;
+		  FIELD_PREP(CAN_MCAN_TXBC_TFQS, ARRAY_SIZE(msg_ram->tx_buffer)) | CAN_MCAN_TXBC_TFQM;
 	err = can_mcan_write_reg(dev, CAN_MCAN_TXBC, reg);
 	if (err != 0) {
 		return err;
@@ -1277,14 +1277,14 @@ int can_mcan_configure_message_ram(const struct device *dev, uintptr_t mrba)
 
 	if (sizeof(msg_ram->rx_fifo0[0].data) <= 24) {
 		reg = FIELD_PREP(CAN_MCAN_RXESC_F0DS, (sizeof(msg_ram->rx_fifo0[0].data) - 8) / 4) |
-		      FIELD_PREP(CAN_MCAN_RXESC_F1DS, (sizeof(msg_ram->rx_fifo1[0].data) - 8) / 4) |
-		      FIELD_PREP(CAN_MCAN_RXESC_RBDS, (sizeof(msg_ram->rx_buffer[0].data) - 8) / 4);
+			  FIELD_PREP(CAN_MCAN_RXESC_F1DS, (sizeof(msg_ram->rx_fifo1[0].data) - 8) / 4) |
+			  FIELD_PREP(CAN_MCAN_RXESC_RBDS, (sizeof(msg_ram->rx_buffer[0].data) - 8) / 4);
 	} else {
 		reg = FIELD_PREP(CAN_MCAN_RXESC_F0DS,
 				 (sizeof(msg_ram->rx_fifo0[0].data) - 32) / 16 + 5) |
-		      FIELD_PREP(CAN_MCAN_RXESC_F1DS,
+			  FIELD_PREP(CAN_MCAN_RXESC_F1DS,
 				 (sizeof(msg_ram->rx_fifo1[0].data) - 32) / 16 + 5) |
-		      FIELD_PREP(CAN_MCAN_RXESC_RBDS,
+			  FIELD_PREP(CAN_MCAN_RXESC_RBDS,
 				 (sizeof(msg_ram->rx_buffer[0].data) - 32) / 16 + 5);
 	}
 
@@ -1456,8 +1456,8 @@ int can_mcan_init(const struct device *dev)
 #endif /* CONFIG_CAN_FD_MODE */
 
 	reg = CAN_MCAN_IE_BOE | CAN_MCAN_IE_EWE | CAN_MCAN_IE_EPE | CAN_MCAN_IE_MRAFE |
-	      CAN_MCAN_IE_TEFLE | CAN_MCAN_IE_TEFNE | CAN_MCAN_IE_RF0NE | CAN_MCAN_IE_RF1NE |
-	      CAN_MCAN_IE_RF0LE | CAN_MCAN_IE_RF1LE;
+		  CAN_MCAN_IE_TEFLE | CAN_MCAN_IE_TEFNE | CAN_MCAN_IE_RF0NE | CAN_MCAN_IE_RF1NE |
+		  CAN_MCAN_IE_RF0LE | CAN_MCAN_IE_RF1LE;
 
 	err = can_mcan_write_reg(dev, CAN_MCAN_IE, reg);
 	if (err != 0) {

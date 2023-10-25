@@ -83,16 +83,14 @@ static int can_sam0_get_core_clock(const struct device *dev, uint32_t *rate)
 
 static void can_sam0_clock_enable(const struct can_sam0_config *cfg)
 {
-    GCLK->GENCTRL[7].reg = GCLK_GENCTRL_SRC(GCLK_GENCTRL_SRC_DPLL96M)
-                           | GCLK_GENCTRL_DIV(cfg->divider)
-                           | GCLK_GENCTRL_GENEN;
-
 	/* Enable the GLCK7 with DIV*/
-
+	GCLK->GENCTRL[7].reg = GCLK_GENCTRL_SRC(GCLK_GENCTRL_SRC_DPLL96M)
+							| GCLK_GENCTRL_DIV(cfg->divider)
+							| GCLK_GENCTRL_GENEN;
 
 	/* Route channel */
 	GCLK->PCHCTRL[cfg->gclk_core_id].reg = GCLK_PCHCTRL_GEN_GCLK7
-					     | GCLK_PCHCTRL_CHEN;
+						 | GCLK_PCHCTRL_CHEN;
 
 	/* Enable CAN clock in MCLK */
 	*cfg->mclk |= cfg->mclk_mask;
@@ -184,7 +182,7 @@ static void config_can_##inst##_irq(void)						\
 {											\
 	LOG_DBG("Enable CAN##inst## IRQ");						\
 	IRQ_CONNECT(DT_INST_IRQ_BY_NAME(inst, line_0, irq),				\
-		    DT_INST_IRQ_BY_NAME(inst, line_0, priority), can_sam0_line_x_isr,	\
+			DT_INST_IRQ_BY_NAME(inst, line_0, priority), can_sam0_line_x_isr,	\
 					DEVICE_DT_INST_GET(inst), 0);			\
 	irq_enable(DT_INST_IRQ_BY_NAME(inst, line_0, irq));				\
 }
@@ -202,8 +200,8 @@ static void config_can_##inst##_irq(void)						\
 											\
 	static const struct can_mcan_config can_mcan_cfg_##inst =			\
 		CAN_MCAN_DT_CONFIG_INST_GET(inst, &can_sam0_cfg_##inst,			\
-					    can_sam0_read_reg,				\
-					    can_sam0_write_reg);
+						can_sam0_read_reg,				\
+						can_sam0_write_reg);
 
 #define CAN_SAM0_DATA_INST(inst)							\
 	static struct can_sam0_data can_sam0_data_##inst;				\
@@ -214,10 +212,10 @@ static void config_can_##inst##_irq(void)						\
 
 #define CAN_SAM0_DEVICE_INST(inst)							\
 	DEVICE_DT_INST_DEFINE(inst, &can_sam0_init, NULL,				\
-			      &can_mcan_data_##inst,					\
-			      &can_mcan_cfg_##inst,					\
-			      POST_KERNEL, CONFIG_CAN_INIT_PRIORITY,			\
-			      &can_sam0_driver_api);
+				  &can_mcan_data_##inst,					\
+				  &can_mcan_cfg_##inst,					\
+				  POST_KERNEL, CONFIG_CAN_INIT_PRIORITY,			\
+				  &can_sam0_driver_api);
 
 #define CAN_SAM0_INST(inst)								\
 	PINCTRL_DT_INST_DEFINE(inst);							\
