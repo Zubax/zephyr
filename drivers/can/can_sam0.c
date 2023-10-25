@@ -83,10 +83,17 @@ static int can_sam0_get_core_clock(const struct device *dev, uint32_t *rate)
 
 static void can_sam0_clock_enable(const struct can_sam0_config *cfg)
 {
+    if(OSCCTRL->DPLLSTATUS.bit.CLKRDY) {
+        GCLK->GENCTRL[7].reg = GCLK_GENCTRL_SRC(GCLK_GENCTRL_SRC_DPLL96M)
+                               | GCLK_GENCTRL_DIV(cfg->divider)
+                               | GCLK_GENCTRL_GENEN;
+    } else {
+        GCLK->GENCTRL[7].reg = GCLK_GENCTRL_SRC(GCLK_GENCTRL_SRC_OSC48M)
+                               | GCLK_GENCTRL_DIV(cfg->divider)
+                               | GCLK_GENCTRL_GENEN;
+    }
 	/* Enable the GLCK7 with DIV*/
-	GCLK->GENCTRL[7].reg = GCLK_GENCTRL_SRC(GCLK_GENCTRL_SRC_OSC48M)
-			     | GCLK_GENCTRL_DIV(cfg->divider)
-			     | GCLK_GENCTRL_GENEN;
+
 
 	/* Route channel */
 	GCLK->PCHCTRL[cfg->gclk_core_id].reg = GCLK_PCHCTRL_GEN_GCLK7
