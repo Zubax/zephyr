@@ -105,14 +105,11 @@ static void gclks_init(void)
 {
 	// Before a Generator is enabled, the corresponding clock source must be enabled
 	// (already done in osc_init()).
-	GCLK->GENCTRL[0].bit.SRC = 0x7; // DPLL96M output
 
 	// 1. The Generator must be enabled (GENCTRL.GENEN = 1) and the division factor must
 	// be set (GENCTRLn.DIVSEL and GENCTRLn.DIV) by performing a single 32-bit write to the
 	// Generator Control register (GENCTRLn).
-	GCLK->GENCTRL[0].bit.DIVSEL = 0;
-	GCLK->GENCTRL[0].bit.DIV = 1;
-	GCLK->GENCTRL[0].bit.GENEN = 1;
+	GCLK->GENCTRL[0].reg = GCLK_GENCTRL_SRC(GCLK_GENCTRL_SRC_DPLL96M) | GCLK_GENCTRL_DIV(2) | GCLK_GENCTRL_GENEN;
 
 	// 2. The Generic Clock for a peripheral must be configured by writing to the respective
 	// PCHCTRLm register. The Generator used as the source for the Peripheral Clock
