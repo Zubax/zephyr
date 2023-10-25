@@ -56,7 +56,9 @@ static void disable_watchdog()
 static bool osc_init(void)
 {
     // Before starting with setting up the XOSC, we check the reason of the last reset
-    if(RSTC->RCAUSE.bit.WDT) {
+    // Cannot use the bit field, it's from HAL and it overlaps with a defined WDT base address define
+    const bool was_watchdog_reset = RSTC->RCAUSE.reg & (1<<6);
+    if(was_watchdog_reset) {
         return false;
     }
 	////////////////
