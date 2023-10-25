@@ -36,8 +36,29 @@ static void mclk_init(void)
 	MCLK->CPUDIV.reg = MCLK_CPUDIV_CPUDIV_DIV1_Val;
 }
 
-static void osc_init(void)
+static void enable_watchdog()
 {
+    MCLK->APBAMASK.bit.WDT_ = 1;
+    WDT->CONFIG.bit.WINDOW = WDT_CONFIG_PER_CYC1024_Val;
+    WDT->CTRLA.bit.ENABLE = 1;
+    // Loop and check for synchronization only for a fixed amount of times, don't want to boot lock in any scenario
+   while(!WDT->SYNCBUSY.bit.ENABLE)
+   {}
+}
+
+static void disable_watchdog()
+{
+    MCLK->APBAMASK.bit.WDT_ = 0;
+    WDT->CTRLA.bit.ENABLE = 0;
+}
+
+// Returns true when the XOSC and DPLL96M were enabled
+static bool osc_init(void)
+{
+    // Before starting with setting up the XOSC, we check the reason of the last reset
+    if(RSTC->RCAUSE.bit.WDT) {
+        return false;
+    }
 	////////////////
 	/// XOSCCTRL ///
 	////////////////
@@ -54,6 +75,19 @@ static void osc_init(void)
 
 	OSCCTRL->XOSCCTRL.reg = OSCCTRL_XOSCCTRL_GAIN(0x3);
 	OSCCTRL->XOSCCTRL.bit.AMPGC = 1;
+
+
+    // The prescaler will be used by CFD to divide the CLK_OSC48M, so that it matches the XOSC freq
+    // freq of CLK_XOSC in case of recovery will be CLK_OSC48M / (2^CFDPRESC)
+    // We use a 16MHz XOSC, so we need to divide by 4, value of CFDPRESC is 2
+    OSCCTRL->CFDPRESC.bit.CFDPRESC = 2;
+
+    // Enable XOSC failure detection (Clock Failure Detection).
+    OSCCTRL->XOSCCTRL.bit.CFDEN = 1;
+//    The clock switch back is enabled. This bit is reset once the XOSC output clock is switched back to the
+//    external clock or crystal oscillator.
+    OSCCTRL->XOSCCTRL.bit.SWBEN = 1;
+
 	OSCCTRL->XOSCCTRL.bit.ONDEMAND = 0;
 	OSCCTRL->XOSCCTRL.bit.XTALEN = 1;
 	OSCCTRL->XOSCCTRL.bit.ENABLE = 1;
@@ -99,13 +133,20 @@ static void osc_init(void)
 	// Output clock ready
 	while (!OSCCTRL->DPLLSTATUS.bit.CLKRDY) {
 	}
+
+    return true;
 }
 
-static void gclks_init(void)
+static void gclks_init(bool useDPLL96M)
 {
 	// Before a Generator is enabled, the corresponding clock source must be enabled
 	// (already done in osc_init()).
-	GCLK->GENCTRL[0].bit.SRC = 0x7; // DPLL96M output
+    if(useDPLL96M)
+    {
+	    GCLK->GENCTRL[0].bit.SRC = GCLK_GENCTRL_SRC_DPLL96M_Val;
+    } else {
+        GCLK->GENCTRL[0].bit.SRC = GCLK_GENCTRL_SRC_OSC48M_Val;
+    }
 
 	// 1. The Generator must be enabled (GENCTRL.GENEN = 1) and the division factor must
 	// be set (GENCTRLn.DIVSEL and GENCTRLn.DIV) by performing a single 32-bit write to the
@@ -113,6 +154,9 @@ static void gclks_init(void)
 	GCLK->GENCTRL[0].bit.DIVSEL = 0;
 	GCLK->GENCTRL[0].bit.DIV = 1;
 	GCLK->GENCTRL[0].bit.GENEN = 1;
+
+    while (GCLK->SYNCBUSY.bit.GENCTRL0){
+    }
 
 	// 2. The Generic Clock for a peripheral must be configured by writing to the respective
 	// PCHCTRLm register. The Generator used as the source for the Peripheral Clock
@@ -127,14 +171,14 @@ static int atmel_samc_init(void)
 
 	flash_waitstates_init();
 
+    enable_watchdog();
+
 	osc48m_init();
 	mclk_init();
-	osc_init();
-	gclks_init();
+    bool dpll_now_used = osc_init();
+	gclks_init(dpll_now_used);
 
-	// Turn off OSC48M
-	OSCCTRL->OSC48MCTRL.bit.ENABLE = 0;
-
+    disable_watchdog();
 	/* Install default handler that simply resets the CPU
 	 * if configured in the kernel, NOP otherwise
 	 */
