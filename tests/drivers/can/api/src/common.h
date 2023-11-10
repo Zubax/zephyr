@@ -9,6 +9,8 @@
 #include <zephyr/drivers/can.h>
 #include <zephyr/kernel.h>
 
+#include <tc_util_user_override.h>
+
 /**
  * Test bitrates in bits/second.
  */
