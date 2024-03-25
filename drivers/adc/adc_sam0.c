@@ -235,10 +235,6 @@ static int adc_sam0_channel_setup(const struct device *dev,
 	wait_synchronization(adc);
 
 	/* My Custom setup */
-	adc->REFCTRL.bit.REFCOMP = 1;   // Reference buffer offset compensation enabled.
-	// adc->CTRLC.bit.CORREN = 0x1;             // Digital Error Correction enabled
-	adc->CTRLC.bit.R2R = 0x1;                // R2R mode enabled
-	// adc->SAMPCTRL.bit.OFFCOMP = 0x1;         // Comparator Offset Compensation enabled
 	uint16_t* calib = (uint16_t*)0x806020;
 
 	#ifdef ADC_SAM0_REFERENCE_ENABLE_PROTECTED
@@ -247,6 +243,10 @@ static int adc_sam0_channel_setup(const struct device *dev,
 	#endif
 	adc->CALIB.bit.BIASREFBUF = (*calib & 0x7);      // Bias Reference Buffer Scaling,
 	adc->CALIB.bit.BIASCOMP = ((*calib >> 3) & 0x7); // Bias Comparator Scaling
+	adc->REFCTRL.bit.REFCOMP = 1;   // Reference buffer offset compensation enabled.
+	// adc->CTRLC.bit.CORREN = 0x1;             // Digital Error Correction enabled
+	adc->CTRLC.bit.R2R = 0x1;                // R2R mode enabled
+	// adc->SAMPCTRL.bit.OFFCOMP = 0x1;         // Comparator Offset Compensation enabled
 	wait_synchronization(adc);
 	#ifdef ADC_SAM0_REFERENCE_ENABLE_PROTECTED
 			adc->CTRLA.bit.ENABLE = 1;
