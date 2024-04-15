@@ -44,6 +44,11 @@ void soc_port_configure(const struct soc_port_pin *pin)
 	pg->DIRCLR.reg = (1 << pin->pinum);
 	pg->OUTCLR.reg = (1 << pin->pinum);
 
+	if (pin->pinum == 12 || pin->pinum == 16 || pin->pinum == 20) {
+		pincfg.bit.DRVSTR = 1;
+		pg->PINCFG[pin->pinum] = pincfg;
+	}
+
 	if (flags & SOC_PORT_PMUXEN_ENABLE) {
 		soc_port_pinmux_set(pg, pin->pinum, func);
 		return;
