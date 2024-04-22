@@ -44,7 +44,10 @@ void soc_port_configure(const struct soc_port_pin *pin)
 	pg->DIRCLR.reg = (1 << pin->pinum);
 	pg->OUTCLR.reg = (1 << pin->pinum);
 
-	if (pin->pinum == 12 || pin->pinum == 16 || pin->pinum == 20) {
+	// Set Pins PA12, PA16 and PA20 to higher drive strength
+	// 0x41000000/PORT is the base address of PORTA
+	// PORT + 0x80 is the base address of PORTB
+	if ((pin->pinum == 12 || pin->pinum == 16 || pin->pinum == 20) && (pin->regs == (PortGroup*)PORT)) {
 		pincfg.bit.DRVSTR = 1;
 		pg->PINCFG[pin->pinum] = pincfg;
 	}
