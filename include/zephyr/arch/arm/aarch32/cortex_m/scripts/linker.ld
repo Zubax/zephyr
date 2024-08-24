@@ -450,6 +450,8 @@ SECTION_PROLOGUE(.last_section,,)
    * region data usage match. */
   LONG(CONFIG_LINKER_LAST_SECTION_ID_PATTERN)
 #endif
+  /* Ensure 16-byte alignment */
+  . = ALIGN(16);
 } GROUP_LINK_IN(ROMABLE_REGION) =0xA5
 
 /* To provide the image size as a const expression,
