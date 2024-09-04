@@ -17,8 +17,8 @@
 
 static void flash_waitstates_init(void)
 {
-	/* One wait state at 48 MHz. */
-	NVMCTRL->CTRLB.bit.RWS = NVMCTRL_CTRLB_RWS_HALF_Val;
+	/* Two wait state at 48 MHz. */
+	NVMCTRL->CTRLB.bit.RWS = NVMCTRL_CTRLB_RWS_DUAL_Val;
 }
 
 static void osc48m_init(void)
@@ -109,7 +109,8 @@ static void gclks_init(void)
 	// 1. The Generator must be enabled (GENCTRL.GENEN = 1) and the division factor must
 	// be set (GENCTRLn.DIVSEL and GENCTRLn.DIV) by performing a single 32-bit write to the
 	// Generator Control register (GENCTRLn).
-	GCLK->GENCTRL[0].reg = GCLK_GENCTRL_SRC(GCLK_GENCTRL_SRC_DPLL96M) | GCLK_GENCTRL_DIV(2) | GCLK_GENCTRL_GENEN;
+	GCLK->GENCTRL[0].reg = GCLK_GENCTRL_SRC(GCLK_GENCTRL_SRC_DPLL96M) | GCLK_GENCTRL_DIV(2) |
+			       GCLK_GENCTRL_GENEN;
 
 	// 2. The Generic Clock for a peripheral must be configured by writing to the respective
 	// PCHCTRLm register. The Generator used as the source for the Peripheral Clock
