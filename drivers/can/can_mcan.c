@@ -934,6 +934,7 @@ int can_mcan_send(const struct device *dev, const struct can_frame *frame, k_tim
 
 unlock:
 	k_mutex_unlock(&data->tx_mtx);
+	k_sem_give(&data->tx_sem);
 
 	return err;
 }
