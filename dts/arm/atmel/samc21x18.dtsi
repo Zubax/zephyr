@@ -13,9 +13,9 @@
 	};
 
 	soc {
-		nvmctrl: nvmctrl@41004000  {
+		nvmctrl: nvmctrl@41004000 {
 			flash0: flash@4000 {
-				reg = <0x4000 DT_SIZE_K(240)>;
+				reg = <0 DT_SIZE_K(240)>; // Total memory is 256 KB, 16KB are allocated for bootloader
 			};
 		};
 	};
