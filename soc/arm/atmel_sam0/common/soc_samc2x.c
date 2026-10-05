@@ -78,8 +78,14 @@ static void osc_init(void)
 
 	OSCCTRL->DPLLCTRLA.bit.ONDEMAND = 0;
 	OSCCTRL->DPLLCTRLA.bit.RUNSTDBY = 0;
-	OSCCTRL->DPLLRATIO.reg = OSCCTRL_DPLLRATIO_LDR((11)) | OSCCTRL_DPLLRATIO_LDRFRAC(0U);
-	OSCCTRL->DPLLCTRLB.reg = OSCCTRL_DPLLCTRLB_REFCLK(0x1U) | OSCCTRL_DPLLCTRLB_FILTER(0x0U);
+	/* The SAM C20/C21 DPLL reference must not exceed 2 MHz (DS60001479H,
+	 * section 45.12.3). Divide the 16 MHz crystal by 2 * (3 + 1) to get
+	 * 2 MHz, then multiply by 47 + 1 to retain the 96 MHz DPLL output.
+	 * GCLK0 remains at 48 MHz with its existing divide-by-two setting.
+	 */
+	OSCCTRL->DPLLRATIO.reg = OSCCTRL_DPLLRATIO_LDR(47U) | OSCCTRL_DPLLRATIO_LDRFRAC(0U);
+	OSCCTRL->DPLLCTRLB.reg = OSCCTRL_DPLLCTRLB_REFCLK(0x1U) |
+			       OSCCTRL_DPLLCTRLB_FILTER(0x0U) | OSCCTRL_DPLLCTRLB_DIV(3U);
 	OSCCTRL->DPLLPRESC.reg = OSCCTRL_DPLLPRESC_PRESC(0x0U);
 	// The DPLLC is enabled by writing a 1 to DPLLCTRLA.ENABLE.
 	OSCCTRL->DPLLCTRLA.bit.ENABLE = 1;
