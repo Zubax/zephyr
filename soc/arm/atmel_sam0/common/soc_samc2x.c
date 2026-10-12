@@ -23,6 +23,10 @@ static void flash_waitstates_init(void)
 
 static void osc48m_init(void)
 {
+	/* Keep the CPU clock running independently of the crystal and DPLL. */
+	OSCCTRL->OSC48MCTRL.bit.ONDEMAND = 0;
+	OSCCTRL->OSC48MCTRL.bit.ENABLE = 1;
+
 	/* Turn off the prescaler */
 	OSCCTRL->OSC48MDIV.bit.DIV = 0;
 	while (OSCCTRL->OSC48MSYNCBUSY.bit.OSC48MDIV) {
@@ -81,7 +85,7 @@ static void osc_init(void)
 	/* The SAM C20/C21 DPLL reference must not exceed 2 MHz (DS60001479H,
 	 * section 45.12.3). Divide the 16 MHz crystal by 2 * (3 + 1) to get
 	 * 2 MHz, then multiply by 47 + 1 to retain the 96 MHz DPLL output.
-	 * GCLK0 remains at 48 MHz with its existing divide-by-two setting.
+	 * The CAN driver uses this crystal-derived output through GCLK7 / 2.
 	 */
 	OSCCTRL->DPLLRATIO.reg = OSCCTRL_DPLLRATIO_LDR(47U) | OSCCTRL_DPLLRATIO_LDRFRAC(0U);
 	OSCCTRL->DPLLCTRLB.reg = OSCCTRL_DPLLCTRLB_REFCLK(0x1U) |
@@ -115,8 +119,11 @@ static void gclks_init(void)
 	// 1. The Generator must be enabled (GENCTRL.GENEN = 1) and the division factor must
 	// be set (GENCTRLn.DIVSEL and GENCTRLn.DIV) by performing a single 32-bit write to the
 	// Generator Control register (GENCTRLn).
-	GCLK->GENCTRL[0].reg = GCLK_GENCTRL_SRC(GCLK_GENCTRL_SRC_DPLL96M) | GCLK_GENCTRL_DIV(2) |
+	/* GCLK0 supplies the CPU and bus clocks at 48 MHz even if the DPLL loses lock. */
+	GCLK->GENCTRL[0].reg = GCLK_GENCTRL_SRC(GCLK_GENCTRL_SRC_OSC48M) | GCLK_GENCTRL_DIV(1) |
 			       GCLK_GENCTRL_GENEN;
+	while (GCLK->SYNCBUSY.bit.GENCTRL0) {
+	}
 
 	// 2. The Generic Clock for a peripheral must be configured by writing to the respective
 	// PCHCTRLm register. The Generator used as the source for the Peripheral Clock
@@ -135,9 +142,6 @@ static int atmel_samc_init(void)
 	mclk_init();
 	osc_init();
 	gclks_init();
-
-	// Turn off OSC48M
-	OSCCTRL->OSC48MCTRL.bit.ENABLE = 0;
 
 	/* Install default handler that simply resets the CPU
 	 * if configured in the kernel, NOP otherwise
